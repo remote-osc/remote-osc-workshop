@@ -1,0 +1,40 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# Emacs
+*~
+\#*\#
+.\#*
+auto-save-list/
+tramp
+.#*
+
+# Vim
+*.swp
+*.swo
+*.swn
+.*.sw?
+Session.vim
+.netrwhist
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.orig
+*.log
+*.pid
+*.seed
+*.pid.lock
+tmp/
+temp/
+
+# Archives produced during packaging
+*.zip
+*.tar
+*.tar.gz
+*.tgz

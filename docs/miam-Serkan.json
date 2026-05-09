@@ -1,0 +1,11 @@
+{
+  "serverAddress": "wss://d36406949p9el2.cloudfront.net",
+  "serverPort": 443,
+  "network": "miam",
+  "password": "123456",
+  "username": "Serkan",
+  "clientAddress": "0.0.0.0",
+  "clientPort": 1337,
+  "appAddress": "127.0.0.1",
+  "appPort": 7770
+}

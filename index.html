@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Hands-on workshop notes for Networked Music Performance with Remote OSC.">
+  <title>Networked Music Performance Workshop with Remote OSC</title>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --surface-2: #1a1a26;
+      --border: #1e1e2e;
+      --border-light: #2a2a3e;
+      --text: #e0e0e8;
+      --text-soft: #b0b0c0;
+      --muted: #8888a0;
+      --accent: #6e6eff;
+      --accent-dim: #4a4acc;
+      --code-bg: #0d0d14;
+      --green: #50fa7b;
+      --orange: #ffb86c;
+      --pink: #ff79c6;
+      --cyan: #8be9fd;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    code, pre, .mono {
+      font-family: "SF Mono", "Fira Code", "Cascadia Code", "Liberation Mono", Menlo, Consolas, monospace;
+    }
+
+    .container { max-width: 940px; margin: 0 auto; padding: 0 24px; }
+
+    header {
+      padding: 76px 0 48px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    header img {
+      width: 72px;
+      height: 72px;
+      margin-bottom: 22px;
+    }
+
+    header h1 {
+      font-size: 2.9rem;
+      line-height: 1.12;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 16px;
+    }
+
+    header h1 span { color: var(--accent); }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 1.08rem;
+      max-width: 720px;
+      margin: 0 auto 24px;
+    }
+
+    .header-links {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .header-links a {
+      font-size: 0.84rem;
+      color: var(--text-soft);
+      border: 1px solid var(--border-light);
+      border-radius: 6px;
+      padding: 6px 13px;
+    }
+
+    .header-links a:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    section { padding: 52px 0; border-bottom: 1px solid var(--border); }
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+
+    h3 {
+      font-size: 1.02rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .section-desc {
+      color: var(--muted);
+      margin-bottom: 24px;
+      font-size: 0.95rem;
+      max-width: 760px;
+    }
+
+    .cards, .timeline, .steps, .issues, .projects { display: grid; gap: 16px; }
+
+    .card, .project, .step, .issue, .case {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 22px;
+    }
+
+    .card p, .project p, .step p, .issue p, .case p {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-bottom: 10px;
+    }
+
+    .card p:last-child,
+    .project p:last-child,
+    .step p:last-child,
+    .issue p:last-child,
+    .case p:last-child { margin-bottom: 0; }
+
+    .project-header {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+
+    .project-links {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .project-links a {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .project-links a:hover { color: var(--accent); }
+    .project-links a.repo {
+      font-family: monospace;
+      color: var(--text-soft);
+    }
+
+    .project-header .tag { margin-bottom: 0; }
+
+    .proto-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      margin-top: 16px;
+    }
+
+    .proto-table th,
+    .proto-table td {
+      text-align: left;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    .proto-table th {
+      color: var(--text-soft);
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .proto-table td { color: var(--muted); }
+
+    .proto-table code {
+      font-size: 0.8rem;
+      color: var(--cyan);
+      background: var(--code-bg);
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 0.72rem;
+      color: var(--accent);
+      background: rgba(110, 110, 255, 0.1);
+      border: 1px solid var(--accent-dim);
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-family: monospace;
+      margin-bottom: 10px;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px 20px;
+    }
+
+    .year {
+      color: var(--cyan);
+      font-family: monospace;
+      font-size: 0.86rem;
+      padding-top: 2px;
+    }
+
+    .timeline-item p {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    ul {
+      color: var(--muted);
+      padding-left: 20px;
+      font-size: 0.92rem;
+    }
+
+    li { margin: 6px 0; }
+
+    .flow-img {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 22px;
+      margin-bottom: 18px;
+    }
+
+    .flow-img img {
+      width: 100%;
+      max-width: 900px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .quickstart {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 16px;
+    }
+
+    .quickstart-header {
+      padding: 13px 18px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.82rem;
+      color: var(--muted);
+      font-family: monospace;
+    }
+
+    .quickstart pre {
+      padding: 18px;
+      font-size: 0.82rem;
+      line-height: 1.8;
+      overflow-x: auto;
+      color: var(--text-soft);
+    }
+
+    .cmd { color: var(--green); }
+    .comment { color: var(--muted); }
+    .string { color: var(--pink); }
+
+    .image-case {
+      margin-top: 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      width: 100%;
+      display: block;
+    }
+
+    footer {
+      padding: 38px 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 720px) {
+      header h1 { font-size: 2.15rem; }
+      .subtitle { font-size: 1rem; }
+      .two-col { grid-template-columns: 1fr; }
+      .timeline-item { grid-template-columns: 1fr; gap: 6px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Networked Music Performance Workshop with <span>Remote OSC</span></h1>
+      <p class="subtitle" style="margin-bottom:10px;">Serkan Sevilgen</p>
+      <p class="subtitle">A hands-on introduction to networked music performance using Remote OSC to connect local audio tools through shared control-data networks.</p>
+    </header>
+
+    <section id="nmp">
+      <h2>What Is Networked Music Performance?</h2>
+      <p class="section-desc">Networked Music Performance, or NMP, is the practice of real-time musical interaction through a computer network.</p>
+      <div class="two-col">
+        <div class="card">
+          <h3>Basic Definition</h3>
+          <p>A networked music performance occurs when musicians in different physical locations interact over a network as part of one performance situation.</p>
+          <p>The instruments may be computer-only systems, human performers with acoustic instruments, or mixed setups combining performers, sensors, software, and synthesis engines.</p>
+        </div>
+        <div class="card">
+          <h3>What Travels Through The Network?</h3>
+          <p>The network may carry audio, control data, score events, code, video, chat, sensor data, or a combination of these.</p>
+          <p>Remote OSC focuses on control data and code. Audio is generated locally by tools such as Csound, SuperCollider, Pure Data, or Max/MSP.</p>
+        </div>
+        <div class="card">
+          <h3>Local and Remote Settings</h3>
+          <p>NMP can happen indoors over a local network, outdoors over temporary wireless networks, or remotely over the wider Internet.</p>
+          <p>Local area networking can support tighter timing. Wide area networking introduces more delay, jitter, and routing uncertainty.</p>
+        </div>
+        <div class="card">
+          <h3>Synchronization Models</h3>
+          <p>Some performances need tight synchronization, similar to musicians improvising in the same room. Others are loosely synchronized, where performers are aware of each other but the delay becomes part of the musical form.</p>
+          <p>If performers cannot hear or see each other, a click track, score clock, conductor signal, or shared event timeline may be needed.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="history">
+      <h2>Brief Historical Timeline</h2>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="year">1896-1906</div>
+          <div><h3>Telharmonium</h3><p>Thaddeus Cahill's electrical music distribution system used telephone infrastructure to transmit generated music to many receivers.</p></div>
+        </div>
+        <div class="timeline-item">
+          <div class="year">1910</div>
+          <div><h3>Metropolitan Opera Radio Transmission</h3><p>Lee de Forest's company broadcast opera excerpts from New York, showing early public music transmission by radio.</p></div>
+        </div>
+        <div class="timeline-item">
+          <div class="year">1951</div>
+          <div><h3>Imaginary Landscape No. 4</h3><p>John Cage's piece for twelve radios explored musical interaction through distributed broadcast sources, before computer networking entered the field.</p></div>
+        </div>
+        <div class="timeline-item">
+          <div class="year">1966 / 1977</div>
+          <div><h3>Max Neuhaus Telephone Networks</h3><p><em>Public Supply I</em> and later <em>Radio Net</em> used telephone and radio systems to create public, distributed sound spaces.</p></div>
+        </div>
+        <div class="timeline-item">
+          <div class="year">1978-1983</div>
+          <div><h3>League of Automatic Music Composers</h3><p>Early microcomputers exchanged musical representation data through direct connections, creating one of the foundations of network computer music.</p></div>
+        </div>
+        <div class="timeline-item">
+          <div class="year">1985-1997</div>
+          <div><h3>The Hub</h3><p>A shared-memory and later MIDI/network ensemble practice extended local laptop-style networking toward remote Internet performances.</p></div>
+        </div>
+        <div class="timeline-item">
+          <div class="year">1992</div>
+          <div><h3>Transatlantic Concert</h3><p>Jean-Claude Risset, Terry Riley, David Rosenboom, and Morton Subotnick connected augmented pianos across Nice and Los Angeles using satellite links.</p></div>
+        </div>
+        <div class="timeline-item">
+          <div class="year">2000s</div>
+          <div><h3>SoundWIRE and Internet2 Experiments</h3><p>Research groups investigated low-latency, bidirectional audio/video links, often using dedicated high-bandwidth academic networks.</p></div>
+        </div>
+        <div class="timeline-item">
+          <div class="year">2000s</div>
+          <div><h3>Republic</h3><p>A SuperCollider Quark used by PowerBooks_UnPlugged for networked laptop performance, sharing code, chat, and control data between performers.</p></div>
+        </div>
+        <div class="timeline-item">
+          <div class="year">2017</div>
+          <div><h3>Utopia</h3><p>A SuperCollider library by Scott Wilson, Julian Rohrhuber, and Alberto de Campo for networked music applications, building on Republic and adding modular tools for synchronization, communication, code sharing, and data sharing.</p></div>
+        </div>
+        <div class="timeline-item">
+          <div class="year">2003 onward</div>
+          <div><h3>Laptop Orchestras and Networked Ensembles</h3><p>Groups such as PowerBooks_UnPlugged, PLOrk, SLOrk, and others normalized networked laptops as performance instruments.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="research">
+      <h2>Current Research and Tools</h2>
+      <p class="section-desc">Recent work treats NMP as both an engineering problem and a compositional opportunity: latency, packet loss, jitter, clock drift, spatial audio, XR, and musical interaction design are all active topics.</p>
+      <div class="two-col">
+        <div class="card">
+          <h3>Research Directions</h3>
+          <ul>
+            <li>Immersive NMP systems study how XR, spatial audio, and telepresence affect the feeling of playing together.</li>
+            <li>Packet-loss concealment research targets musical audio, where voice-call assumptions are often not enough.</li>
+            <li>5G/6G and Internet of Sounds research explores low-latency infrastructure, smart musical instruments, and networked audio services.</li>
+            <li>Some recent systems intentionally exploit latency instead of treating it only as a defect.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Common Tools</h3>
+          <p><strong>JackTrip</strong> and <strong>SonoBus</strong> are common choices when the network carries audio between performers.</p>
+          <p><strong>Remote OSC</strong> is different: it sends control data, text, and code over WebSockets, while each participant's local machine generates sound.</p>
+          <p>The <a href="https://internetofsounds2025.ieee-is2.org/">IEEE International Symposium on the Internet of Sounds</a> is a current venue for work on NMP, networked immersive audio, Web Audio, smart instruments, and related systems.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="issues">
+      <h2>Issues of NMP</h2>
+      <p class="section-desc">Every NMP setup must decide which timing problems it can reduce, which ones it can tolerate, and which ones can become part of the music.</p>
+      <div class="issues">
+        <div class="issue">
+          <h3>Latency and RTT</h3>
+          <p>Latency is the time between an action and its remote result. Round Trip Time, or RTT, measures the time for audio or data to go to the remote end and return. For tightly synchronized ensemble playing, the often-cited Ensemble Performance Threshold is around 25 ms.</p>
+        </div>
+        <div class="issue">
+          <h3>Dropout and Packet Loss</h3>
+          <p>Audio dropouts happen when packets arrive too late or never arrive. Control-data systems are less bandwidth-heavy, but still need meaningful behavior when messages are delayed, dropped, or arrive out of order.</p>
+        </div>
+        <div class="issue">
+          <h3>Audio Blocking Delay</h3>
+          <p>Digital audio is processed in buffers. Larger buffers make systems more stable, but each buffer adds delay before transmission, processing, or playback can happen.</p>
+        </div>
+        <div class="issue">
+          <h3>Algorithmic Delay</h3>
+          <p>Compression can reduce bandwidth, but codecs introduce processing delay. This matters most when the network carries audio rather than only control data.</p>
+        </div>
+        <div class="issue">
+          <h3>Network Delay and Jitter</h3>
+          <p>Network delay includes physical propagation and packet switching. Even though signal propagation is fast, Internet routing and traffic variation can add tens of milliseconds and unpredictable packet delay variation.</p>
+        </div>
+        <div class="issue">
+          <h3>Clock Synchronization</h3>
+          <p>Different audio devices have different clocks. Over time, A/D and D/A clock differences can cause drift, requiring resampling, synchronization, or musical designs that do not depend on sample-accurate alignment.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="remote-osc">
+      <h2>Remote OSC</h2>
+      <p class="section-desc">Remote OSC is designed for networked performance over wide area networks where sending musical control data is more practical than streaming audio.</p>
+      <h3>Core Idea</h3>
+      <p class="section-desc">Instead of transmitting sound, Remote OSC transmits the values, events, code, and text that can produce or shape sound on each participant's own computer. This avoids many audio-streaming problems such as audio compression artifacts, audio dropouts, A/D and D/A conversion latency, and packet-loss handling for continuous audio.</p>
+      <ul>
+        <li><strong>Control data over WAN:</strong> Remote OSC is based on lightweight control messages sent across the Internet, not high-bandwidth audio streams.</li>
+        <li><strong>Software-based instruments:</strong> It targets systems where sound is generated locally by Csound, SuperCollider, Pure Data, Max/MSP, Python, or another OSC-capable tool.</li>
+        <li><strong>High-quality sound:</strong> Audio is produced by the local audio application, so the sound quality depends on the local synthesis engine and audio setup rather than on streamed, compressed network audio.</li>
+        <li><strong>OSC and UDP locally:</strong> Local music software communicates with the client using OSC (Open Sound Control) over UDP, which is common in real-time music systems.</li>
+        <li><strong>Platform-agnostic workflow:</strong> Any music software can be used as long as it can send and receive OSC messages.</li>
+        <li><strong>Client/server architecture:</strong> A public server avoids peer discovery and many firewall or router-configuration problems that appear in peer-to-peer setups.</li>
+        <li><strong>Cloud relay:</strong> The server runs on a publicly accessible cloud machine and relays messages between users in the same named network.</li>
+        <li><strong>Local bridge:</strong> The client is a local application on the participant's laptop. It connects the local music software to the Remote OSC server.</li>
+        <li><strong>Pseudo-networks:</strong> A named network is created on the server. Anyone who joins the same network can send and receive data, code, and text messages with the group.</li>
+      </ul>
+      <h3 style="margin-top:28px;">Components</h3>
+      <p class="section-desc">The ecosystem is split into focused repositories. Each component can be used independently, but they are designed to work together.</p>
+      <div class="projects">
+        <div class="project">
+          <div class="project-header">
+            <h3>Remote OSC Server</h3>
+          </div>
+          <p>WebSocket relay server with network-based routing and SQLite-backed registration. Performers connect to named networks; messages are relayed only within that network. Supports password-protected network creation and performer IDs from 0 to 99.</p>
+          <div class="project-links">
+            <a class="repo" href="https://github.com/serkansevilgen/remote-osc">github.com/serkansevilgen/remote-osc</a>
+            <a href="https://github.com/serkansevilgen/remote-osc#http-api">HTTP API docs</a>
+          </div>
+        </div>
+
+        <div class="project">
+          <div class="project-header">
+            <h3>Remote OSC Client</h3>
+          </div>
+          <p>Bidirectional WebSocket-to-UDP bridge. Connects local audio applications to the server for collaborative performance. Guided CLI setup with saved profiles in <code>~/.remote_osc/</code>, cross-platform binaries (macOS, Linux, Windows, Raspberry Pi), and automatic reconnection with exponential backoff.</p>
+          <div class="project-links">
+            <a class="repo" href="https://github.com/remote-osc/remote-osc-client">github.com/remote-osc/remote-osc-client</a>
+          </div>
+        </div>
+
+        <div class="project">
+          <div class="project-header">
+            <h3>Remote OSC Web</h3>
+          </div>
+          <p>Static browser performance interface and monitoring tool. Join networks, send control data, exchange chat and code snippets, monitor traffic, and generate config files for the Remote OSC Client. Uses native WebSockets so binary OSC and JSON text frames coexist.</p>
+          <div class="project-links">
+            <a class="repo" href="https://github.com/remote-osc/remote-osc-web">github.com/remote-osc/remote-osc-web</a>
+          </div>
+        </div>
+      </div>
+      <h3 style="margin-top:28px;">Architecture</h3>
+      <div class="flow-img">
+        <img src="images/flow.svg" alt="Remote OSC data flow diagram">
+      </div>
+      <h3 style="margin-top:28px;">Use Cases</h3>
+      <ul>
+        <li><strong>Collaborative performance:</strong> Musicians can perform together through a shared network regardless of their physical locations.</li>
+        <li><strong>Remote control of sound installations:</strong> Performers or sensors can control an installation directly, or by sending data that shapes local synthesis, playback, or spatialization.</li>
+        <li><strong>Live electronics rehearsals for mixed music:</strong> A performer, composer, or technician can control or test live electronics remotely during rehearsals for acoustic-plus-electronic works.</li>
+        <li><strong>Remote and distributed concerts:</strong> Multiple venues, classrooms, homes, or rehearsal spaces can participate in one performance structure without streaming all audio between sites.</li>
+        <li><strong>Remote sonification:</strong> Sensor, scientific, environmental, or biometric data can be sent to another machine where it is mapped to sound in real time.</li>
+        <li><strong>Teaching and workshops:</strong> An instructor can send control data, code, or example parameters to every participant connected to the same network.</li>
+        <li><strong>Networked live coding:</strong> Performers can exchange code snippets and control messages while each local system renders the sound.</li>
+        <li><strong>Hybrid web and local performances:</strong> Browser-based controls can interact with local audio software through the same Remote OSC network.</li>
+      </ul>
+      <h3 style="margin-top:28px;">How to Use Remote OSC</h3>
+      <ul>
+        <li>Install the Remote OSC Server application on a publicly available computer, such as a cloud server, or use an existing server that is already installed and configured. One Remote OSC Server can handle many simultaneous connections.</li>
+        <li>Install the Remote OSC Client application on your computer.</li>
+        <li>Configure the client connection to the Remote OSC Server and to your local audio application.</li>
+        <li>Create a new network on the server, or join an existing one.</li>
+        <li>In your audio application, separate the controller interface from the synthesizer. Instead of sending parameters directly to the synthesizer, send them to Remote OSC Client using your application's OSC implementation. The synthesizer should consume incoming messages from Remote OSC Client through OSC.</li>
+      </ul>
+      <div class="flow-img" aria-label="Audio application, Remote OSC Client, and Remote OSC Server diagram">
+        <svg viewBox="0 0 900 170" role="img" aria-labelledby="remote-osc-connection-title" style="width:100%;display:block;">
+          <title id="remote-osc-connection-title">Bidirectional connection between audio application, Remote OSC Client, and Remote OSC Server</title>
+          <defs>
+            <marker id="arrow-bidir-start" viewBox="0 0 10 10" refX="2" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M 10 0 L 0 5 L 10 10 z" fill="#8be9fd"/>
+            </marker>
+            <marker id="arrow-bidir-end" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#8be9fd"/>
+            </marker>
+          </defs>
+          <rect x="35" y="48" width="230" height="74" rx="8" fill="#1a1a26" stroke="#2a2a3e"/>
+          <text x="150" y="80" fill="#e0e0e8" font-size="18" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif">Audio Application</text>
+          <text x="150" y="103" fill="#8888a0" font-size="13" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif">Max, Pd, SuperCollider, Csound, etc.</text>
+
+          <line x1="285" y1="85" x2="385" y2="85" stroke="#8be9fd" stroke-width="3" marker-start="url(#arrow-bidir-start)" marker-end="url(#arrow-bidir-end)"/>
+          <text x="335" y="68" fill="#b0b0c0" font-size="13" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif">OSC / UDP</text>
+
+          <rect x="405" y="48" width="190" height="74" rx="8" fill="#12121a" stroke="#6e6eff"/>
+          <text x="500" y="80" fill="#e0e0e8" font-size="18" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif">Remote OSC</text>
+          <text x="500" y="103" fill="#8888a0" font-size="13" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif">Client</text>
+
+          <line x1="615" y1="85" x2="715" y2="85" stroke="#8be9fd" stroke-width="3" marker-start="url(#arrow-bidir-start)" marker-end="url(#arrow-bidir-end)"/>
+          <text x="665" y="68" fill="#b0b0c0" font-size="13" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif">WebSocket</text>
+
+          <rect x="735" y="48" width="130" height="74" rx="8" fill="#12121a" stroke="#6e6eff"/>
+          <text x="800" y="80" fill="#e0e0e8" font-size="18" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif">Remote OSC</text>
+          <text x="800" y="103" fill="#8888a0" font-size="13" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif">Server</text>
+        </svg>
+      </div>
+      <div class="flow-img" aria-label="Controller and synthesizer OSC routing diagram">
+        <svg viewBox="0 0 900 300" role="img" aria-labelledby="osc-routing-title" style="width:100%;display:block;">
+          <title id="osc-routing-title">Controller to synthesizer before and after Remote OSC routing</title>
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#8be9fd"/>
+            </marker>
+          </defs>
+          <rect x="40" y="35" width="180" height="58" rx="8" fill="#1a1a26" stroke="#2a2a3e"/>
+          <text x="130" y="70" fill="#e0e0e8" font-size="18" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif">Controller</text>
+          <line x1="235" y1="64" x2="400" y2="64" stroke="#8be9fd" stroke-width="3" marker-end="url(#arrow)"/>
+          <rect x="420" y="35" width="180" height="58" rx="8" fill="#1a1a26" stroke="#2a2a3e"/>
+          <text x="510" y="70" fill="#e0e0e8" font-size="18" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif">Synthesizer</text>
+          <text x="650" y="70" fill="#8888a0" font-size="14" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif">direct local mapping</text>
+
+          <rect x="40" y="190" width="180" height="58" rx="8" fill="#1a1a26" stroke="#2a2a3e"/>
+          <text x="130" y="225" fill="#e0e0e8" font-size="18" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif">Controller</text>
+          <line x1="235" y1="219" x2="350" y2="219" stroke="#8be9fd" stroke-width="3" marker-end="url(#arrow)"/>
+          <text x="292" y="198" fill="#b0b0c0" font-size="13" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif">send OSC</text>
+          <rect x="370" y="190" width="190" height="58" rx="8" fill="#12121a" stroke="#6e6eff"/>
+          <text x="465" y="213" fill="#e0e0e8" font-size="17" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif">Remote OSC</text>
+          <text x="465" y="235" fill="#8888a0" font-size="13" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif">client / network</text>
+          <line x1="580" y1="219" x2="695" y2="219" stroke="#8be9fd" stroke-width="3" marker-end="url(#arrow)"/>
+          <text x="637" y="198" fill="#b0b0c0" font-size="13" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif">receive OSC</text>
+          <rect x="715" y="190" width="145" height="58" rx="8" fill="#1a1a26" stroke="#2a2a3e"/>
+          <text x="787" y="225" fill="#e0e0e8" font-size="18" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif">Synthesizer</text>
+        </svg>
+      </div>
+      <ul>
+        <li>Play with others who are connected to the same network.</li>
+        <li>Optionally open Remote OSC Web to monitor activity, chat, send code, build an interface, or perform from the browser.</li>
+      </ul>
+      <h3 style="margin-top:28px;">Used in Performance</h3>
+      <p class="section-desc">Remote OSC has been used in telematic ensemble performances and interactive installations.</p>
+      <div class="cases">
+        <div class="case">
+          <h3>Gendy Cloud</h3>
+          <p>A networked, multichannel work where performers remotely control Gendyn-based Csound instruments with OSC parameters. Remote OSC carries the data traffic between performers and host computer.</p>
+          <p class="credits">By Serkan Sevilgen</p>
+          <a href="https://gendycloud.serkansevilgen.com/">gendycloud.serkansevilgen.com</a>
+        </div>
+        <div class="case">
+          <h3>Sounding Microcosmos</h3>
+          <p>A real-time biodata sonification artwork. GSR sensor data travels through Remote OSC to a web-based Csound engine for live sonification.</p>
+          <p class="credits">By Ipek Oskay and Serkan Sevilgen</p>
+          <a href="https://serkansevilgen.com/sounding-microcosmos/">serkansevilgen.com/sounding-microcosmos</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="hands-on">
+      <h2>Hands-on Setup</h2>
+      <p class="section-desc">This part installs and configures the Remote OSC Client. Use the Python example first because it confirms the network path without requiring an audio environment. Then move to Pure Data, Max/MSP, Csound, or SuperCollider.</p>
+
+      <h3>Client: Download</h3>
+      <p class="section-desc">Choose the binary that matches your operating system and processor. The workshop package includes the binaries in <code>bin/</code> and the audio application examples in <code>docs/examples.zip</code>.</p>
+      <table class="proto-table">
+        <thead>
+          <tr>
+            <th>System</th>
+            <th>Binary</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>macOS Apple Silicon</td>
+            <td><a href="bin/remote-osc-client-darwin-arm64"><code>remote-osc-client-darwin-arm64</code></a></td>
+          </tr>
+          <tr>
+            <td>macOS Intel</td>
+            <td><a href="bin/remote-osc-client-darwin-amd64"><code>remote-osc-client-darwin-amd64</code></a></td>
+          </tr>
+          <tr>
+            <td>Linux amd64</td>
+            <td><a href="bin/remote-osc-client-linux-amd64"><code>remote-osc-client-linux-amd64</code></a></td>
+          </tr>
+          <tr>
+            <td>Linux arm64</td>
+            <td><a href="bin/remote-osc-client-linux-arm64"><code>remote-osc-client-linux-arm64</code></a></td>
+          </tr>
+          <tr>
+            <td>Raspberry Pi 3/4</td>
+            <td><a href="bin/remote-osc-client-linux-armv7"><code>remote-osc-client-linux-armv7</code></a></td>
+          </tr>
+          <tr>
+            <td>Raspberry Pi 1/2/Zero</td>
+            <td><a href="bin/remote-osc-client-linux-armv6"><code>remote-osc-client-linux-armv6</code></a></td>
+          </tr>
+          <tr>
+            <td>Windows amd64</td>
+            <td><a href="bin/remote-osc-client-windows-amd64.exe"><code>remote-osc-client-windows-amd64.exe</code></a></td>
+          </tr>
+          <tr>
+            <td>Examples</td>
+            <td><a href="docs/examples.zip"><code>docs/examples.zip</code></a></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 style="margin-top:28px;">Client: Install</h3>
+      <p class="section-desc">Put the client somewhere stable and run it from a terminal. On macOS and Linux, rename the downloaded binary to <code>remote-osc-client</code> and make it executable.</p>
+      <div class="two-col">
+        <div class="card">
+          <h3>macOS / Linux</h3>
+          <div class="quickstart">
+            <div class="quickstart-header">terminal</div>
+            <pre><span class="cmd">mkdir</span> -p ~/bin
+<span class="cmd">mv</span> ~/Downloads/remote-osc-client-* ~/bin/remote-osc-client
+<span class="cmd">chmod</span> +x ~/bin/remote-osc-client
+<span class="cmd">~/bin/remote-osc-client</span></pre>
+          </div>
+          <p>Optional: add <code>~/bin</code> to your shell path so you can run <code>remote-osc-client</code> from any folder.</p>
+        </div>
+        <div class="card">
+          <h3>Windows</h3>
+          <div class="quickstart">
+            <div class="quickstart-header">PowerShell</div>
+            <pre><span class="cmd">cd</span> $HOME\Downloads
+<span class="cmd">mkdir</span> $HOME\remote-osc-client
+<span class="cmd">move</span> .\remote-osc-client-windows-amd64.exe $HOME\remote-osc-client\
+<span class="cmd">cd</span> $HOME\remote-osc-client
+<span class="cmd">.\remote-osc-client-windows-amd64.exe</span></pre>
+          </div>
+          <p>Optional: rename the file to <code>remote-osc-client.exe</code> and add the folder to your Windows <code>Path</code>.</p>
+        </div>
+      </div>
+
+      <h3 style="margin-top:28px;">Client: Configure</h3>
+      <p class="section-desc">Start the client without a config path to open the guided CLI flow. It can connect using a saved profile, create a new profile, edit a saved profile, or load a config file manually.</p>
+      <div class="quickstart">
+        <div class="quickstart-header">run</div>
+        <pre><span class="cmd">remote-osc-client</span></pre>
+      </div>
+      <p class="section-desc" style="margin-top:16px;">For the workshop, you can also download the prepared config file: <a href="docs/miam-Serkan.json"><code>docs/miam-Serkan.json</code></a>.</p>
+      <div class="quickstart">
+        <div class="quickstart-header">run with config file</div>
+        <pre><span class="cmd">remote-osc-client</span> ~/Downloads/miam-Serkan.json</pre>
+      </div>
+      <p class="section-desc" style="margin-top:16px;">Profiles are stored in your home directory under <code>~/.remote_osc/</code>. On Windows this resolves under your user home directory, for example <code>C:\Users\you\.remote_osc\</code>.</p>
+      <table class="proto-table">
+        <thead>
+          <tr>
+            <th>Prompt</th>
+            <th>Default</th>
+            <th>Meaning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>Server address</code></td>
+            <td><code>ws://127.0.0.1</code></td>
+            <td>Local server while developing. Use the workshop server address for this session.</td>
+          </tr>
+          <tr>
+            <td><code>Server port</code></td>
+            <td><code>8081</code></td>
+            <td>Local server port. Cloud servers commonly use <code>443</code>.</td>
+          </tr>
+          <tr>
+            <td><code>Network name</code></td>
+            <td>workshop network</td>
+            <td>The shared room or network name everyone joins.</td>
+          </tr>
+          <tr>
+            <td><code>Network password</code></td>
+            <td>provided in workshop</td>
+            <td>Password for the network, if the server requires one.</td>
+          </tr>
+          <tr>
+            <td><code>Username</code></td>
+            <td>your name</td>
+            <td>Name registered with the server. Use a unique name.</td>
+          </tr>
+          <tr>
+            <td><code>Client listen address</code></td>
+            <td><code>0.0.0.0</code></td>
+            <td>Address the Remote OSC Client listens on for OSC from your local app.</td>
+          </tr>
+          <tr>
+            <td><code>Client listen port</code></td>
+            <td><code>1337</code></td>
+            <td>Port your local app sends OSC to.</td>
+          </tr>
+          <tr>
+            <td><code>Local app address</code></td>
+            <td><code>127.0.0.1</code></td>
+            <td>Address of Max, Pure Data, Csound, SuperCollider, or another app on your machine.</td>
+          </tr>
+          <tr>
+            <td><code>Local app port</code></td>
+            <td><code>7770</code></td>
+            <td>Port your local app listens on for OSC from the network.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="cards" style="margin-top:16px;">
+        <div class="card">
+          <h3>Audio Application Examples</h3>
+          <p>Unzip <a href="docs/examples.zip"><code>docs/examples.zip</code></a>. The examples use the same control vocabulary: <code>freq</code> and <code>amp</code>. Local controls do not change the synth directly; the synth changes only when messages return through the Remote OSC path.</p>
+          <ul>
+            <li><strong>Python</strong>: network test, no audio synthesis, no external packages.</li>
+            <li><strong>Pure Data</strong>: vanilla OSC objects, useful as a fallback.</li>
+            <li><strong>Max/MSP</strong>: uses CNMAT OSC externals.</li>
+            <li><strong>Csound</strong>: uses built-in OSC opcodes and local synthesis.</li>
+            <li><strong>SuperCollider</strong>: uses <code>NetAddr</code> and <code>OSCdef</code>.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="remote-osc-web">
+      <h2>Remote OSC Web</h2>
+      <p class="section-desc">Remote OSC Web is a browser performance interface and monitoring tool for the Remote OSC ecosystem. It lets performers join a shared OSC network from the browser, send control data, exchange chat and code snippets, monitor activity, and generate config files for the Remote OSC Client.</p>
+      <p class="section-desc">Remote OSC Web is not an audio engine, and it cannot send UDP OSC directly to a local audio application from the browser. Audio is generated by local tools such as Max/MSP, Pure Data, Csound, SuperCollider, or another OSC-capable app through <code>remote-osc-client</code>.</p>
+      <p class="section-desc"><a href="https://remote-osc.github.io/remote-osc-web/">Open Remote OSC Web</a></p>
+
+      <h3>Purpose</h3>
+      <ul>
+        <li>Create or join Remote OSC networks.</li>
+        <li>Send performance controls such as <code>freq</code> and <code>amp</code>.</li>
+        <li>Send and receive chat messages.</li>
+        <li>Send and receive code snippets.</li>
+        <li>Monitor incoming data, text, and code traffic.</li>
+        <li>Build a controller interface and export or import it as a JSON file.</li>
+        <li>Build and download a JSON config file for <code>remote-osc-client</code>.</li>
+        <li>Use the Remote OSC Client when browser activity should reach a local audio application.</li>
+      </ul>
+
+      <h3 style="margin-top:28px;">Config Export</h3>
+      <p class="section-desc">The config builder can download a JSON profile for the Remote OSC Client. Use the downloaded file with:</p>
+      <div class="quickstart">
+        <div class="quickstart-header">use exported config</div>
+        <pre><span class="cmd">remote-osc-client</span> path/to/config.json</pre>
+      </div>
+    </section>
+
+    <footer>
+      <p>Networked Music Performance Workshop with Remote OSC</p>
+      <p><a href="https://github.com/remote-osc">github.com/remote-osc</a></p>
+    </footer>
+  </div>
+</body>
+</html>
